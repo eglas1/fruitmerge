@@ -1,7 +1,7 @@
 /* Service worker do Fruit Merge.
    O index.html é sempre buscado na rede primeiro, então não precisa mexer
    em nada para atualizar o jogo. Só troque VERSION se mudar ícones ou este arquivo. */
-const VERSION = 'v4';
+const VERSION = 'v5';
 const CACHE = 'fruit-merge-' + VERSION;
 const PRECACHE = [
   './',
