@@ -1,7 +1,7 @@
 /* Service worker do Fruit Merge.
    O index.html é sempre buscado na rede primeiro, então não precisa mexer
    em nada para atualizar o jogo. Só troque VERSION se mudar ícones ou este arquivo. */
-const VERSION = 'v4';
+const VERSION = 'v6';
 const CACHE = 'fruit-merge-' + VERSION;
 const PRECACHE = [
   './',
@@ -39,7 +39,7 @@ function swr(req, cacheKey) {
       const net = fetch(req).then(res => {
         if (res && (res.ok || res.type === 'opaque')) cache.put(cacheKey || req, res.clone());
         return res;
-      }).catch(() => hit);
+      }).catch(() => hit || Response.error());
       return hit || net;
     })
   );
@@ -54,7 +54,7 @@ function freshPage() {
     });
     const timeout = new Promise((_, rej) => setTimeout(rej, 4000));
     return Promise.race([net, timeout])
-      .catch(() => cache.match('./index.html').then(hit => hit || net));
+      .catch(() => cache.match('./index.html').then(hit => hit || net.catch(() => Response.error())));
   });
 }
 
