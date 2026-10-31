@@ -879,6 +879,31 @@ html.dublk #nx{visibility:hidden}
 .ck{display:inline-block;width:1em;height:1em;vertical-align:-.14em;pointer-events:none;filter:drop-shadow(0 0 5px rgba(200,245,66,.7))}
 .ddp .ck{width:26px;height:26px;vertical-align:middle}
 
+/* Como jogar (Duelo e Duplas) no mesmo tema videogame das salas de espera */
+#dhw{background:radial-gradient(ellipse at center,rgba(20,14,70,.55),rgba(3,3,18,.88))}
+#dhw .dcard{background:repeating-linear-gradient(135deg,rgba(255,255,255,.035) 0 8px,rgba(255,255,255,0) 8px 16px),linear-gradient(165deg,#2e1d7a 0%,#18124a 55%,#0e0a30 100%);border:3px solid #6af0ff;border-radius:18px;box-shadow:0 0 0 3px #060620,0 0 26px rgba(106,240,255,.55),inset 0 0 34px rgba(106,240,255,.16),inset 0 3px 0 rgba(255,255,255,.18);padding-top:18px}
+#dhwt{text-align:center;padding:9px 26px 8px;border-radius:12px;background:linear-gradient(180deg,#ffe36a,#f59a0c);border:3px solid #6b3a00;box-shadow:0 4px 0 #6b3a00,inset 0 3px 0 rgba(255,255,255,.55);color:#fff;-webkit-text-stroke:0;text-shadow:0 2px 0 #7a4300,0 0 8px rgba(122,67,0,.6);letter-spacing:.06em;text-transform:uppercase;font-size:22px}
+#dhwl{color:#cfe9ff}
+#dhwl li::marker{color:#6af0ff}
+#dhwl b{color:#ffe36a}
+@media (max-height:880px){#dhwt{font-size:18px;padding:6px 18px}}
+
+/* Aba Amigos: botões Ver perfil / ✕ (e ✔ dos pedidos) no estilo dos botões do menu */
+#fv .frow{gap:8px;padding:8px 10px 12px}
+#fv .frow button{position:relative;isolation:isolate;flex:none;height:34px;padding:0 12px;border:0;border-radius:11px;display:flex;align-items:center;justify-content:center;font-family:'Lilita One','Chalkboard SE','Comic Sans MS',system-ui,sans-serif;font-size:15px;font-weight:400;line-height:1;letter-spacing:.02em;white-space:nowrap;color:#fff;-webkit-text-stroke:3px var(--ol);paint-order:stroke fill;text-shadow:0 1px 0 var(--ol);background:linear-gradient(180deg,var(--c1),var(--c2));box-shadow:0 0 0 2px var(--ol),0 4px 0 2px var(--ol),0 7px 8px rgba(0,0,0,.28),inset 0 2px 0 rgba(255,255,255,.45),inset 0 -4px 0 rgba(0,0,0,.18);cursor:pointer;transition:transform .1s,box-shadow .1s,filter .1s;--c1:#47bcff;--c2:#1a6fe0;--ol:#0b3b94}
+#fv .frow button::before{content:"";position:absolute;z-index:-1;left:5%;right:5%;top:6%;height:38%;border-radius:9px 9px 24px 24px/8px 8px 12px 12px;background:linear-gradient(180deg,rgba(255,255,255,.5),rgba(255,255,255,0))}
+#fv .frow button:active{transform:translateY(3px);filter:brightness(1.08);box-shadow:0 0 0 2px var(--ol),0 1px 0 2px var(--ol),0 3px 5px rgba(0,0,0,.28),inset 0 2px 0 rgba(255,255,255,.45),inset 0 -4px 0 rgba(0,0,0,.18)}
+#fv .frow button[data-rm],#fv .frow button[data-rn]{width:34px;padding:0;--c1:#ff8a7e;--c2:#e2382b;--ol:#7a1410}
+#fv .frow button.rqy{width:34px;padding:0;--c1:#a9f03f;--c2:#36ab23;--ol:#1b5e1f;color:#fff}
+#fv .frow button.arm{--c1:#ffb24a;--c2:#e8730b;--ol:#7a3a00;color:#fff}
+
+/* Sair da conta + Buscar/Voltar da aba Adicionar no estilo dos botões do menu */
+html #lo,html #fa #fgo,html #fa #fab{position:relative;isolation:isolate;width:100%;height:54px;padding:0 14px;margin:2px 0 8px;border:0;border-radius:16px;display:flex;align-items:center;justify-content:center;gap:8px;font-family:'Lilita One','Chalkboard SE','Comic Sans MS',system-ui,sans-serif;font-size:21px;font-weight:400;line-height:1;letter-spacing:.02em;white-space:nowrap;color:#fff;-webkit-text-stroke:4px var(--ol);paint-order:stroke fill;text-shadow:0 2px 0 var(--ol);background:linear-gradient(180deg,var(--c1),var(--c2));box-shadow:0 0 0 3px var(--ol),0 5px 0 3px var(--ol),0 10px 10px rgba(0,0,0,.3),inset 0 3px 0 rgba(255,255,255,.45),inset 0 -5px 0 rgba(0,0,0,.18);cursor:pointer;transition:transform .1s,box-shadow .1s,filter .1s;--c1:#47bcff;--c2:#1a6fe0;--ol:#0b3b94}
+html #lo::before,html #fa #fgo::before,html #fa #fab::before{content:"";position:absolute;z-index:-1;left:4%;right:4%;top:5%;height:38%;border-radius:12px 12px 34px 34px/10px 10px 18px 18px;background:linear-gradient(180deg,rgba(255,255,255,.5),rgba(255,255,255,0))}
+html #lo:active,html #fa #fgo:active,html #fa #fab:active{transform:translateY(4px);filter:brightness(1.08);box-shadow:0 0 0 3px var(--ol),0 1px 0 3px var(--ol),0 5px 7px rgba(0,0,0,.3),inset 0 3px 0 rgba(255,255,255,.45),inset 0 -5px 0 rgba(0,0,0,.18)}
+html #lo{--c1:#ff8a7e;--c2:#e2382b;--ol:#7a1410}
+html #fa #fgo{--c1:#a9f03f;--c2:#36ab23;--ol:#1b5e1f}
+
 /* ===== Pedidos de amizade: bolinha verde, mini perfil e lista de pedidos ===== */
 .rqn{position:absolute;top:-8px;right:-8px;z-index:3;min-width:20px;height:20px;padding:0 5px;box-sizing:border-box;border-radius:10px;background:#c8f542;color:#1d3a00;border:2px solid #fff;box-shadow:0 0 8px rgba(200,245,66,.9);font:800 12px/16px system-ui,sans-serif;font-style:normal;text-align:center;pointer-events:none}
 .rqn[hidden]{display:none}
@@ -1664,7 +1689,7 @@ function flip(){
 }
 let nb=10000;
 function grant(why){
-  if(over||MODE!=='normal')return;const mine=String(why).startsWith('🎯')&&MODE==='normal'&&CHO&&CHO.length===2;if(MODE==='luck'){if(flips>=10)return;flips++}else if(mine){CHO.forEach(id=>{if(id==='fl')flips++;else if(id==='cl')clears++;else if(id==='wd')wands++;else if(id==='hm')hammers++;else if(id==='trp')springs++;else if(id==='bombpw')bombs++})}else{flips++;clears++}const WG=why==='🍉'&&wandOK();if(WG){wands++;hammers++;springs++;bombs++}const PWL=(MODE==='luck'?['fl']:mine?CHO.slice():['fl','cl']).concat(WG?['wd','hm','trp','bombpw']:[]);
+  if(over||MODE!=='normal')return;const mine=!String(why).startsWith('🧪')&&MODE==='normal'&&CHO&&CHO.length===2;if(MODE==='luck'){if(flips>=10)return;flips++}else if(mine){CHO.forEach(id=>{if(id==='fl')flips++;else if(id==='cl')clears++;else if(id==='wd')wands++;else if(id==='hm')hammers++;else if(id==='trp')springs++;else if(id==='bombpw')bombs++})}else{flips++;clears++}const WG=why==='🍉'&&wandOK()&&!mine;if(WG){wands++;hammers++;springs++;bombs++}const PWL=(MODE==='luck'?['fl']:mine?CHO.slice():['fl','cl']).concat(WG?['wd','hm','trp','bombpw']:[]);
   const w=$('wrap'),n=w.querySelectorAll('.bn').length,d=document.createElement('div');d.className='bn';d.style.top=(14+n*44)+'px';
   const sp=t=>{const e=document.createElement('span');e.textContent=t;return e};d.appendChild(sp(why));PWL.forEach(i=>{d.appendChild(sp('+1'));const m=document.createElement('img');m.src=$(i).querySelector('img').src;d.appendChild(m)});w.appendChild(d);setTimeout(()=>d.remove(),2200);
   {const q=$('pw');q.classList.remove('pu');void q.offsetWidth;q.classList.add('pu')}PWL.forEach(i=>{const b=$(i);b.classList.remove('pu');void b.offsetWidth;b.classList.add('pu')});hud();
