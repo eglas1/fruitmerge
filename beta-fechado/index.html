@@ -1068,7 +1068,7 @@ const FB=(function(){
   try{
     if(typeof firebase==='undefined'||!FIREBASE_CONFIG.apiKey||/COLE_AQUI/.test(FIREBASE_CONFIG.apiKey))return none;
     firebase.initializeApp(FIREBASE_CONFIG);
-    const auth=firebase.auth(),db=firebase.firestore(),FV=FB.duel.FV;
+    const auth=firebase.auth(),db=firebase.firestore(),FV=firebase.firestore.FieldValue;
     /* ===== Login com Google ===== */
     const gprov=new firebase.auth.GoogleAuthProvider();gprov.setCustomParameters({prompt:'select_account'});
     let pend=null; /* conta Google logada que ainda não escolheu nome/gênero no jogo */
