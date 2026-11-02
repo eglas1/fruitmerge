@@ -744,7 +744,7 @@ html.tight #bar #bt #pw img.i1{width:34px;height:34px}
 .shno{--o:#27334f;background:linear-gradient(180deg,#b3c2e0,#5b709b)!important;box-shadow:0 0 0 3px #27334f,0 4px 0 3px #27334f,inset 0 3px 0 rgba(255,255,255,.45)}
 .shok{--o:#145a16;background:linear-gradient(180deg,#a6f04f,#2f9e2a)!important;box-shadow:0 0 0 3px #145a16,0 4px 0 3px #145a16,inset 0 3px 0 rgba(255,255,255,.55)}
 /* aviso */
-#shtoast{position:absolute;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 26px);z-index:6;transform:translate(-50%,24px);opacity:0;pointer-events:none;max-width:90%;padding:11px 18px;border-radius:999px;background:rgba(42,15,69,.95);border:3px solid #fff;box-shadow:0 8px 18px rgba(0,0,0,.35);font-size:17px;white-space:nowrap;transition:opacity .2s,transform .25s}
+#shtoast{position:absolute;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 26px);z-index:6;transform:translate(-50%,24px);opacity:0;pointer-events:none;width:max-content;max-width:calc(100% - 32px);box-sizing:border-box;padding:11px 18px;border-radius:22px;background:rgba(42,15,69,.95);border:3px solid #fff;box-shadow:0 8px 18px rgba(0,0,0,.35);font-size:17px;line-height:1.25;text-align:center;white-space:normal;overflow-wrap:anywhere;transition:opacity .2s,transform .25s}
 #shtoast.on{opacity:1;transform:translate(-50%,0)}
 .shfly{position:fixed;z-index:190;width:34px;height:34px;pointer-events:none;object-fit:contain;filter:drop-shadow(0 3px 2px rgba(0,0,0,.35))}
 /* selo de estoque na escolha de poderes do Clássico */
@@ -2276,7 +2276,8 @@ const custGuest=()=>CUST.docs.filter(d=>d.st==='active'&&d.u[1]===CUST.uid).sort
 const custOut=()=>CUST.docs.find(d=>d.st==='pending'&&d.u[0]===CUST.uid)||null;
 /* pet e raça ficam travados: (1) em guarda compartilhada (ativa, convidando ou convidado);
    (2) depois de escolhido, enquanto a sequência estiver viva (os botões só voltam quando ela for perdida/resetada) */
-const custLock=()=>{const c=PETD[PET];return !!(CUST.uid&&(custAct()||custOut()||custGuest().length))||(!!(c&&c.b)&&skState().n>0)};
+const custShared=()=>!!(CUST.uid&&(custAct()||custOut()||custGuest().length));
+const custLock=()=>{const c=PETD[PET];return custShared()||(!!(c&&c.b)&&skState().n>0)};
 function custInc(){return CUST.docs.filter(d=>d.st==='pending'&&d.u[1]===CUST.uid)}
 const custPartner=d=>d.u[0]===CUST.uid?{uid:d.u[1],name:d.nb}:{uid:d.u[0],name:d.na};
 const custToday=()=>dnum(dkey(dnow()));
@@ -4795,7 +4796,7 @@ function save(){try{localStorage.setItem('fm-coins',String(coins));localStorage.
 load();
 
 /* ---------- utilidades de UI ---------- */
-function toast(t){const e=$('shtoast');e.textContent=t;e.classList.add('on');clearTimeout(toast._t);toast._t=setTimeout(()=>e.classList.remove('on'),1800)}
+function toast(t){const e=$('shtoast');e.textContent=t;e.classList.add('on');clearTimeout(toast._t);toast._t=setTimeout(()=>e.classList.remove('on'),t.length>30?3200:1800)}
 function tick(){try{if(typeof pop==='function')pop()}catch(e){}}
 function buzz(p){try{navigator.vibrate&&navigator.vibrate(p)}catch(e){}}
 function setBal(to,anim){
@@ -4983,7 +4984,8 @@ function buyPet(id){
 }
 function equipPet(id){
   const p=PETS.find(x=>x[0]===id);if(!p||petsOwned().indexOf(id)<0)return;
-  let lk=false;try{lk=custLock()}catch(e){}
+  /* na loja o pet já foi comprado: só a guarda compartilhada bloqueia (a trava de sequência viva vale só para escolher raça nova no painel de pets) */
+  let lk=false;try{lk=custShared()}catch(e){}
   if(lk){toast(T('Pet e raça bloqueados durante a guarda compartilhada.'));return}
   try{PETD[p[1]]={b:id,n:(PETD[p[1]].b===id?PETD[p[1]].n:'')};PET=p[1];petSave();drawXP()}catch(e){return}
   tick();buzz(25);toast(T('Pet equipado!'));renderPets()
