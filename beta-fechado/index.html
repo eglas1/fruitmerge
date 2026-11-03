@@ -260,7 +260,7 @@ button{background:var(--btn);color:#fff;border:0;border-radius:10px;padding:9px 
 #go #gm{--c1:#47bcff;--c2:#1a6fe0;--ol:#0b3b94;margin-top:8px}
 #go #ag::before,#go #gm::before{content:"";position:absolute;z-index:-1;left:4%;right:4%;top:5%;height:38%;border-radius:14px 14px 40px 40px/12px 12px 20px 20px;background:linear-gradient(180deg,rgba(255,255,255,.5),rgba(255,255,255,0))}
 #go #ag:active,#go #gm:active{transform:translateY(4px);filter:brightness(1.08);box-shadow:0 0 0 3px var(--ol),0 2px 0 3px var(--ol),0 6px 8px rgba(0,0,0,.3),inset 0 3px 0 rgba(255,255,255,.45),inset 0 -6px 0 rgba(0,0,0,.18)}
-#toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 150px);transform:translateX(-50%);z-index:400;padding:10px 18px;border-radius:20px;background:rgba(0,0,0,.78);color:#fff;font:600 15px system-ui,sans-serif;opacity:0;pointer-events:none;transition:opacity .25s}
+#toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 150px);transform:translateX(-50%);z-index:400;width:max-content;max-width:calc(100vw - 32px);box-sizing:border-box;text-align:center;line-height:1.3;padding:10px 18px;border-radius:20px;background:rgba(0,0,0,.78);color:#fff;font:600 15px system-ui,sans-serif;opacity:0;pointer-events:none;transition:opacity .25s}
 #toast.on{opacity:1}
 #ach{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 10px);z-index:500;display:flex;align-items:center;gap:12px;width:max-content;max-width:min(92vw,360px);box-sizing:border-box;padding:8px 20px 8px 10px;border-radius:22px;background:rgba(0,0,0,.65);border:3px solid #f5b72a;box-shadow:0 6px 0 #8a5a00,0 10px 24px rgba(0,0,0,.4),0 0 18px rgba(245,183,42,.6);color:#fff;font-family:'Lilita One','Chalkboard SE','Comic Sans MS',system-ui,sans-serif;pointer-events:none;overflow:hidden;transform:translate(-50%,-160%);animation:achIn 4s both}
 #ach img{width:58px;height:58px;object-fit:contain;flex:none;animation:achPop .7s .25s cubic-bezier(.3,1.6,.5,1) both}
@@ -810,11 +810,11 @@ html.tight #bar #bt #pw img.i1{width:34px;height:34px}
 .dly:not(.rdy) .dbt{background:linear-gradient(180deg,#b3c2e0,#5b709b)!important;box-shadow:0 0 0 3px #27334f,0 4px 0 3px #27334f,inset 0 3px 0 rgba(255,255,255,.4);-webkit-text-stroke:3.5px #27334f;cursor:default}
 .dly.rdy .dbt{animation:shglow 1.4s ease-in-out infinite}
 @keyframes shglow{50%{filter:brightness(1.15)}}
-.shdot{position:absolute;top:-6px;right:-5px;width:20px;height:20px;box-sizing:border-box;border-radius:50%;background:#c8f542;box-shadow:0 0 8px rgba(200,245,66,.9);border:2px solid #fff}
+.shdot{position:absolute;top:0;right:0;width:11.5px;height:11.5px;box-sizing:border-box;border-radius:50%;background:#c8f542;box-shadow:0 0 8px rgba(200,245,66,.9);border:1.5px solid #fff;z-index:3;pointer-events:none;animation:rkdot 1.6s ease-in-out infinite}
 .shtab .shdot[hidden]{display:none}
 .shtab{position:relative}
 #sh{position:relative}
-#sh.shdy::after{content:"";position:absolute;top:2px;right:6px;width:14px;height:14px;box-sizing:border-box;border-radius:50%;background:#c8f542;box-shadow:0 0 8px rgba(200,245,66,.9);border:2px solid #fff}
+#sh.shdy::after{content:"";position:absolute;top:0;right:0;width:11.5px;height:11.5px;box-sizing:border-box;border-radius:50%;background:#c8f542;box-shadow:0 0 8px rgba(200,245,66,.9);border:1.5px solid #fff;z-index:3;pointer-events:none;animation:rkdot 1.6s ease-in-out infinite}
 </style>
 <div id="shp" hidden>
   <div class="shw">
@@ -1143,7 +1143,7 @@ html #fa #fgo{--c1:#a9f03f;--c2:#36ab23;--ol:#1b5e1f}
 #petp .cfr:active{background:rgba(240,222,180,.95)}
 #petp .cfr small{font:600 12px system-ui,sans-serif;color:#8a6a3a}
 #petp .cfr span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}#petp .cfr small{flex:none}
-#xp .skw.cdot::after{content:"";position:absolute;top:-2px;right:-2px;width:14px;height:14px;border-radius:50%;background:#c8f542;box-shadow:0 0 8px rgba(200,245,66,.9);border:2px solid #fff;box-sizing:border-box;z-index:6}
+#xp .skw.cdot::after{content:"";position:absolute;top:2px;right:2px;width:11.5px;height:11.5px;border-radius:50%;background:#c8f542;box-shadow:0 0 8px rgba(200,245,66,.9);border:1.5px solid #fff;box-sizing:border-box;z-index:6;pointer-events:none;animation:rkdot 1.6s ease-in-out infinite}
 #petp .petpic .chs{position:absolute;inset:0;pointer-events:none}
 #petp .petpic .chs div{position:absolute;inset:0;background:var(--u) center/contain no-repeat;transform-origin:50% 50%;animation:petch 3.6s ease-in-out infinite;will-change:transform}
 @keyframes petch{0%,100%{transform:scaleX(1)}50%{transform:scaleX(calc(1 + var(--a)))}}
@@ -1161,14 +1161,14 @@ html #fa #fgo{--c1:#a9f03f;--c2:#36ab23;--ol:#1b5e1f}
 #petp .pin::placeholder{color:#a58a60}
 
 /* ===== Pedidos de amizade: bolinha verde, mini perfil e lista de pedidos ===== */
-.rqn{position:absolute;top:-8px;right:-8px;z-index:3;min-width:20px;height:20px;padding:0 5px;box-sizing:border-box;border-radius:10px;background:#c8f542;color:#1d3a00;border:2px solid #fff;box-shadow:0 0 8px rgba(200,245,66,.9);font:800 12px/16px system-ui,sans-serif;font-style:normal;text-align:center;pointer-events:none}
+.rqn{position:absolute;top:0;right:0;z-index:3;min-width:20px;height:20px;padding:0 5px;box-sizing:border-box;border-radius:10px;background:#c8f542;color:#1d3a00;border:2px solid #fff;box-shadow:0 0 8px rgba(200,245,66,.9);font:800 12px/16px system-ui,sans-serif;font-style:normal;text-align:center;pointer-events:none;animation:rkdot 1.6s ease-in-out infinite}
 .rqn[hidden]{display:none}
 #nav #lg{overflow:visible}
-#nav #lg .rqn{top:-6px;right:-6px}
+#nav #lg .rqn{top:0;right:0}
 #fbar .fbtn{position:relative}
 #frq{width:100%;display:flex;flex-direction:column;gap:8px}
 #frq[hidden]{display:none}
-#frq .fh .rqn{position:static;display:inline-block;margin-left:6px;vertical-align:middle}
+#frq .fh .rqn{position:static;display:inline-block;margin-left:6px;vertical-align:middle;animation:none}
 .frow button.rqy{border-color:#2e9e4f;color:#2e9e4f}
 #mpf{position:fixed;inset:0;z-index:96;display:flex;align-items:center;justify-content:center;padding:16px;box-sizing:border-box;background:rgba(0,0,0,.6)}
 #mpf[hidden]{display:none}
