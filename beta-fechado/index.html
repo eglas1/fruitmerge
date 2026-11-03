@@ -685,7 +685,7 @@ html.tight #bar #bt #pw img.i1{width:34px;height:34px}
 .shbody::-webkit-scrollbar{display:none}
 .shbody.in{animation:shtab .25s ease-out}
 @keyframes shtab{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
-.shbody.sl{animation:shslide .25s ease-out}
+.shbody.shsl{animation:shslide .25s ease-out}
 @keyframes shslide{from{opacity:0;transform:translateX(var(--sx,44px))}to{opacity:1;transform:none}}
 .shnote{margin:0 0 18px;padding:10px 12px;border-radius:14px;background:rgba(42,15,69,.84);border:2px solid rgba(255,255,255,.4);font:600 13px/1.35 system-ui,-apple-system,sans-serif;text-align:center;box-shadow:0 4px 10px rgba(0,0,0,.2)}
 .shnote b{color:#ffe14d;font-weight:800}
@@ -1358,6 +1358,7 @@ const FB=(function(){
       q.docs.forEach(d=>{const x=d.data(),key=x.u||d.id;if(seen.has(key))return;seen.add(key);
         if(x.u)players.push({uid:x.u,name:x.n,tag:x.g});else guests++});
       players.sort((a,b)=>String(a.name).localeCompare(String(b.name)));
+      try{if(window.__fmOnline)window.__fmOnline(players)}catch(e){} /* aviso de amigo online */
       return{players,guests,total:seen.size};
     }
     /* espera o Firebase restaurar a sessão antes de decidir de quem é o ranking */
@@ -1520,6 +1521,7 @@ const FB=(function(){
           const ud=(await uref.get()).data()||{};
           await wipeQ(uref.collection('save'));
           await wipeQ(uref.collection('friends'));
+          try{await wipeQ(uref.collection('inbox'))}catch(e){}
           try{await wipeQ(db.collection('custody').where('u','array-contains',uid))}catch(e){}
           await wipeQ(db.collection('scores').where('uid','==',uid));
           try{await wipeQ(db.collection('records').where('uid','==',uid))}catch(e){}
@@ -1652,6 +1654,29 @@ const FB=(function(){
         return p;
       },
       myUid(){const u=auth.currentUser;return u?u.uid:''},
+      /* ===== chat entre amigos: histórico em chats/{par}/m e aviso na caixa users/{destino}/inbox/{remetente} ===== */
+      async chatSend(fid,text){
+        const u=auth.currentUser;if(!u||!myName)throw{code:'fm/login'};
+        text=String(text||'').trim().slice(0,500);if(!text)return;
+        const pair=[u.uid,fid].sort().join('_'),t=FV.serverTimestamp();
+        const b=db.batch();
+        b.set(db.collection('chats').doc(pair).collection('m').doc(),{from:u.uid,to:fid,text,t,exp:firebase.firestore.Timestamp.fromMillis(Date.now()+14*86400000)});
+        b.set(db.collection('users').doc(fid).collection('inbox').doc(u.uid),{n:myName,text,t});
+        await b.commit();
+      },
+      chatWatch(fid,cb){
+        const u=auth.currentUser;if(!u)return()=>{};
+        const pair=[u.uid,fid].sort().join('_');
+        return db.collection('chats').doc(pair).collection('m').orderBy('t','desc').limit(40).onSnapshot(sn=>{
+          cb(sn.docs.map(d=>{const x=d.data({serverTimestamps:'estimate'});return{id:d.id,me:x.from===u.uid,text:String(x.text||''),t:x.t&&x.t.toMillis?x.t.toMillis():Date.now()}}).reverse());
+        },e=>{console.warn('Chat:',e);cb(null,e)});
+      },
+      inboxWatch(cb){
+        const u=auth.currentUser;if(!u)return()=>{};
+        return db.collection('users').doc(u.uid).collection('inbox').onSnapshot(sn=>{
+          sn.docChanges().forEach(c=>{if(c.type==='removed')return;const x=c.doc.data();if(!x.t||!x.t.toMillis||!x.text)return;cb({uid:c.doc.id,name:String(x.n||''),text:String(x.text),t:x.t.toMillis()})});
+        },e=>console.warn('Mensagens:',e));
+      },
       /* busca por tag: devolve o perfil público do jogador e a relação com ele (friend|incoming|sent|none) */
       async lookup(txt){
         const u=auth.currentUser;if(!u)throw{code:'fm/login'};
@@ -3535,7 +3560,7 @@ async function drawOnline(){
     pl.sort((a,b)=>(a.tag===FB.tag?-1:b.tag===FB.tag?1:0)||(fr.has(b.uid)-fr.has(a.uid))||String(a.name).localeCompare(String(b.name)));
     box.innerHTML=pl.map(p=>{
       const mine=!!USER&&p.tag===FB.tag,isF=fr.has(p.uid),t=tg(p.name,p.tag);
-      return'<div class="frow"><b><i class="od"></i>'+esc(p.name)+'</b>'+(mine?'<em>'+TR('você')+'</em>':isF?'<em>'+TR('amigo')+'</em>':USER?'<button data-a="'+esc(t)+'" aria-label="'+TR('Adicionar')+'">➕</button>':'')+'</div>';
+      return'<div class="frow"><b><i class="od"></i>'+esc(p.name)+'</b>'+(mine?'<em>'+TR('você')+'</em>':isF?'<em>'+TR('amigo')+'</em>'+(p.uid?'<button class="chb" data-c="'+esc(p.uid)+'" data-n="'+esc(p.name)+'" aria-label="Chat"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg></button>':''):USER?'<button data-a="'+esc(t)+'" aria-label="'+TR('Adicionar')+'">➕</button>':'')+'</div>';
     }).join('')+(g>0?'<p class="fn">👤 '+TR(g===1?'{n} visitante sem conta':'{n} visitantes sem conta',{n:g})+'</p>':'');
     if(!pl.length&&!g)box.innerHTML='<p class="fn">'+TR('Ninguém online agora.')+'</p>';
   }catch(e){q('ohd').textContent='';box.innerHTML='<p class="fn">'+esc(FB.err(e))+'</p>'}
@@ -3546,6 +3571,7 @@ window.onLang.push(()=>{if(!q('ov').hidden)drawOnline()});
 q('ovb').onclick=()=>{q('ov').hidden=true};
 q('ov').addEventListener('click',e=>{if(e.target!==q('ov'))return;const r=q('ov').getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)q('ov').hidden=true}); /* toque fora do cartão fecha */
 q('orl').onclick=async e=>{
+  const ch=e.target.closest('[data-c]');if(ch){if(window.FMChat)FMChat.open(ch.dataset.c,ch.dataset.n);return}
   const a=e.target.closest('[data-a]');if(!a)return;a.disabled=true;
   try{const f=await FB.lookup(a.dataset.a),r=await FB.sendRequest(f);a.replaceWith(Object.assign(document.createElement('em'),{textContent:r==='accepted'?TR('amigo ✔'):TR('pedido enviado')}))}
   catch(x){a.disabled=false;q('oe').textContent=FB.err(x)}
@@ -3875,7 +3901,7 @@ function heatLevel(now){
 const heatLock=()=>{heatLevel(Date.now());return !!HT.hot};
 function heatClick(e){
   if(!DU.live||DU.fin||DU.result)return;
-  if(e.target.closest&&e.target.closest('button'))return;
+  if(e.target.closest&&(e.target.closest('button')||e.target.closest('#fmbn,#fmcw')))return;
   const now=Date.now(),gap=now-HT.last;HT.last=now;
   if(HT.hot||gap>=HEAT_GAP)return;   /* clique normal (jogar a fruta) não esquenta */
   const h=heatLevel(now),n=h+HEAT_ADD;
@@ -5026,8 +5052,8 @@ function setTab(t,dir){
   document.querySelectorAll('#shp .shtab').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
   const b=$('shbody');b.scrollTop=0;
   t==='pw'?renderPow():t==='pe'?renderPets():renderCoins();dailyTimer(t==='co');
-  b.classList.remove('in','sl');b.style.transition='';b.style.transform='';void b.offsetWidth;
-  if(dir){b.style.setProperty('--sx',(dir>0?44:-44)+'px');b.classList.add('sl')}else b.classList.add('in');
+  b.classList.remove('in','shsl');b.style.transition='';b.style.transform='';void b.offsetWidth;
+  if(dir){b.style.setProperty('--sx',(dir>0?44:-44)+'px');b.classList.add('shsl')}else b.classList.add('in');
   tick()
 }
 function open(t){
@@ -5180,6 +5206,281 @@ window.shopCharge=()=>{
   });
   if(ch)save()
 };
+})();
+</script>
+
+<style>
+/* ===== Avisos no topo (amigo online / mensagens) e chat com amigos ===== */
+#fmbn{position:fixed;z-index:700;top:calc(env(safe-area-inset-top,0px) + 8px);left:50%;transform:translateX(-50%);width:min(92vw,340px);display:flex;flex-direction:column;align-items:center;gap:6px;pointer-events:none;font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+.fmo{max-width:100%;box-sizing:border-box;padding:5px 12px;border-radius:999px;background:rgba(0,0,0,.7);color:#fff;font-size:12.5px;font-weight:600;line-height:1.25;display:flex;align-items:center;gap:7px;opacity:0;transform:translateY(-8px);transition:opacity .22s,transform .22s;pointer-events:none;-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
+.fmo.on{opacity:1;transform:none}
+.fmo i{flex:none;width:8px;height:8px;border-radius:50%;background:#2ee66b;box-shadow:0 0 6px 1px rgba(46,230,107,.8)}
+.fmo.nt i{display:none}
+.fmo span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fmm{width:100%;box-sizing:border-box;padding:8px 12px 5px;border-radius:16px;background:rgba(0,0,0,.7);color:#fff;pointer-events:auto;touch-action:none;-webkit-user-select:none;user-select:none;opacity:0;transform:translateY(-8px);transition:opacity .22s,transform .22s;-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);-webkit-tap-highlight-color:transparent}
+.fmm.on{opacity:1;transform:none}
+.fmm.drag{transition:none}
+.fmh{display:flex;align-items:center;gap:6px}
+.fmn{flex:1;min-width:0;font-size:12px;font-weight:700;opacity:.85;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fmx{display:none;flex:none;width:22px;height:22px;padding:0;border:0;border-radius:50%;background:rgba(255,255,255,.16);color:#fff;font-size:11px;line-height:1;align-items:center;justify-content:center;cursor:pointer}
+.fmm.ex .fmx{display:flex}
+.fmt{margin-top:2px;font-size:13.5px;line-height:1.3;word-break:break-word;white-space:pre-wrap;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.fmm.ex .fmt{display:block;-webkit-line-clamp:unset;max-height:34dvh;overflow-y:auto;touch-action:pan-y;-webkit-user-select:text;user-select:text}
+.fmr{display:none;gap:6px;margin-top:8px}
+.fmm.ex .fmr{display:flex}
+.fmr input,.fmf input{flex:1;min-width:0;height:34px;box-sizing:border-box;padding:0 12px;border:0;border-radius:17px;background:rgba(255,255,255,.16);color:#fff;font:16px system-ui,sans-serif;outline:none;-webkit-user-select:text;user-select:text;touch-action:auto}
+.fmr input::placeholder,.fmf input::placeholder{color:rgba(255,255,255,.55)}
+.fms{flex:none;width:34px;height:34px;padding:0;border:0;border-radius:50%;background:#2e9e4f;color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.fms svg,.chb svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
+.fms:disabled{opacity:.5}
+.fmg{width:34px;height:4px;border-radius:2px;background:rgba(255,255,255,.35);margin:6px auto 2px}
+.fmm.ex .fmg{display:none}
+#fmcw{position:fixed;inset:0;z-index:600;display:flex;align-items:flex-start;justify-content:center;padding:calc(env(safe-area-inset-top,0px) + 56px) 12px 12px;box-sizing:border-box;background:rgba(0,0,0,.55)}
+#fmcw[hidden]{display:none}
+.fmc{width:min(92vw,360px);height:min(50dvh,420px);display:flex;flex-direction:column;overflow:hidden;border-radius:18px;background:repeating-linear-gradient(135deg,rgba(255,255,255,.035) 0 8px,rgba(255,255,255,0) 8px 16px),linear-gradient(165deg,#0f6b58 0%,#0a4036 55%,#05231d 100%);border:3px solid #5af0b8;box-shadow:0 0 0 3px #021611,0 0 26px rgba(90,240,184,.5),inset 0 0 34px rgba(90,240,184,.14);color:#fff}
+.fmc header{flex:none;display:flex;align-items:center;gap:8px;padding:9px 10px;background:rgba(0,0,0,.28)}
+.fmc header i{flex:none;width:10px;height:10px;border-radius:50%;background:#2ee66b;box-shadow:0 0 6px 2px rgba(46,230,107,.6)}
+.fcn{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:400 18px 'Lilita One','Chalkboard SE',system-ui,sans-serif;letter-spacing:.02em}
+.fcx{flex:none;width:28px;height:28px;padding:0;border:0;border-radius:50%;background:rgba(255,255,255,.14);color:#fff;font-size:13px;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.fml{flex:1;min-height:0;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:6px;font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;scrollbar-width:none}
+.fml::-webkit-scrollbar{display:none}
+.fb{max-width:82%;box-sizing:border-box;padding:7px 11px;border-radius:14px;font-size:14px;line-height:1.3;word-break:break-word;white-space:pre-wrap;-webkit-user-select:text;user-select:text}
+.fb.me{align-self:flex-end;background:#2e9e4f;border-bottom-right-radius:4px}
+.fb.th{align-self:flex-start;background:rgba(255,255,255,.16);border-bottom-left-radius:4px}
+.fme{margin:auto;opacity:.75;font:14px system-ui,sans-serif;text-align:center}
+.fmf{flex:none;display:flex;gap:6px;padding:8px 10px;background:rgba(0,0,0,.28)}
+/* ícone de chat no cartão do amigo (aba Online) */
+#orl .frow .chb{border-color:rgba(90,240,184,.7);background:rgba(90,240,184,.18)}
+</style>
+<script>
+(function(){
+'use strict';
+const T=(p,e)=>(window.LANG&&window.LANG()==='en')?e:p;
+const lsGet=k=>{try{return localStorage.getItem(k)}catch(e){return null}};
+const lsSet=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
+const uidNow=()=>{try{return(typeof USER!=='undefined'&&USER&&FB&&FB.myUid)?FB.myUid():''}catch(e){return''}};
+const errMsg=e=>{try{return FB.err?FB.err(e):T('Não foi possível enviar.','Could not send.')}catch(x){return T('Não foi possível enviar.','Could not send.')}};
+const SVG_SEND='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4 20-7z"/></svg>';
+
+/* ---------- contêiner dos avisos (fica acima de tudo, inclusive em partida) ---------- */
+let box=null;
+function ensure(){
+  if(box&&box.isConnected)return box;
+  box=document.createElement('div');box.id='fmbn';box.setAttribute('aria-live','polite');
+  document.body.appendChild(box);return box;
+}
+/* aviso pequeno e discreto; dot=true mostra a bolinha verde */
+function pill(text,dot,ms){
+  const b=ensure();
+  if(b.querySelectorAll('.fmo').length>=3)return;
+  const e=document.createElement('div');e.className='fmo'+(dot?'':' nt');e.setAttribute('role','status');
+  const d=document.createElement('i'),s=document.createElement('span');s.textContent=text;
+  e.append(d,s);b.appendChild(e);
+  requestAnimationFrame(()=>requestAnimationFrame(()=>e.classList.add('on')));
+  setTimeout(()=>{e.classList.remove('on');setTimeout(()=>e.remove(),260)},ms||2000);
+}
+const say=t=>pill(t,false,2200);
+const showOnline=name=>pill(T(name+' está online',name+' is online'),true,2000);
+
+/* ---------- aviso de mensagem (arrastar para baixo = estende e abre o campo de resposta) ---------- */
+let cur=null,Q=[],HQ=[],tmr=0;
+const clearT=()=>{clearTimeout(tmr);tmr=0};
+function arm(ms){
+  clearT();
+  tmr=setTimeout(()=>{
+    if(!cur)return;
+    if(cur.ex&&(cur.inp.value||document.activeElement===cur.inp)){arm(8000);return} /* digitando: não fecha */
+    closeMsg();
+  },ms);
+}
+function expand(){
+  if(!cur||cur.ex)return;
+  cur.ex=true;cur.el.classList.add('ex');cur.el.style.transform='';arm(10000);
+}
+function closeMsg(){
+  const c=cur;if(!c)return;
+  cur=null;clearT();
+  try{if(c.el.contains(document.activeElement))document.activeElement.blur()}catch(e){}
+  c.el.classList.remove('on');setTimeout(()=>c.el.remove(),260);
+  const n=Q.shift();
+  if(n)setTimeout(()=>{if(cur){Q.unshift(n);return}openMsg(n)},320);
+}
+function openMsg(m){
+  const el=document.createElement('div');el.className='fmm';el.setAttribute('role','status');
+  el.innerHTML='<div class="fmh"><b class="fmn"></b><button type="button" class="fmx">✕</button></div><div class="fmt"></div><div class="fmr"><input type="text" maxlength="500" autocomplete="off" enterkeyhint="send"><button type="button" class="fms">'+SVG_SEND+'</button></div><div class="fmg"></div>';
+  const txt=el.querySelector('.fmt'),inp=el.querySelector('input'),snd=el.querySelector('.fms'),x=el.querySelector('.fmx');
+  el.querySelector('.fmn').textContent=m.name||'';
+  txt.textContent=m.text;
+  inp.placeholder=T('Responder…','Reply…');snd.setAttribute('aria-label',T('Enviar','Send'));x.setAttribute('aria-label',T('Fechar','Close'));
+  const c={el,uid:m.uid,name:m.name,txt,inp,ex:false,busy:false};cur=c;
+  ensure().appendChild(el);
+  requestAnimationFrame(()=>requestAnimationFrame(()=>el.classList.add('on')));
+  arm(3000);
+
+  let dr=null;
+  el.addEventListener('pointerdown',e=>{
+    if(e.target.closest('.fmr,.fmx'))return;
+    if(c.ex&&e.target.closest('.fmt')&&txt.scrollHeight>txt.clientHeight+2)return; /* texto longo: deixa rolar */
+    dr={y:e.clientY,id:e.pointerId,moved:false};clearT();el.classList.add('drag');
+    try{el.setPointerCapture(e.pointerId)}catch(_){}
+  });
+  el.addEventListener('pointermove',e=>{
+    if(!dr||e.pointerId!==dr.id)return;
+    const dy=e.clientY-dr.y;if(Math.abs(dy)>6)dr.moved=true;
+    if(!c.ex){
+      el.style.transform='translateY('+Math.max(0,Math.min(dy,36))+'px)';
+      if(dy>30){el.classList.remove('drag');expand();dr.y=e.clientY}
+    }else{
+      if(dy<0)el.style.transform='translateY('+Math.max(dy,-60)+'px)';
+      if(dy<-40){dr=null;el.classList.remove('drag');closeMsg()}
+    }
+  });
+  const up=e=>{
+    if(!dr||e.pointerId!==dr.id)return;
+    const was=dr;dr=null;el.classList.remove('drag');el.style.transform='';
+    if(cur!==c)return;
+    if(!c.ex){if(!was.moved)expand();else arm(2000)}else arm(10000);
+  };
+  el.addEventListener('pointerup',up);el.addEventListener('pointercancel',up);
+  x.addEventListener('click',()=>closeMsg());
+  inp.addEventListener('focus',clearT);
+  inp.addEventListener('blur',()=>{if(cur===c)arm(6000)});
+  inp.addEventListener('input',()=>{if(cur===c)arm(10000)});
+  inp.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();send()}else if(e.key==='Escape')closeMsg()});
+  snd.addEventListener('click',send);
+  async function send(){
+    const t=inp.value.trim();if(!t||c.busy)return;
+    c.busy=true;snd.disabled=true;
+    try{await FB.chatSend(c.uid,t);if(cur===c)closeMsg();say(T('Enviado','Sent'))}
+    catch(err){c.busy=false;snd.disabled=false;say(errMsg(err))}
+  }
+}
+function pushMsg(m){
+  if(!m||!m.uid||!m.text)return;
+  if(CW.uid===m.uid&&!cw.hidden)return;                  /* o chat desse amigo já está aberto */
+  if(document.hidden){HQ.push(m);if(HQ.length>3)HQ.shift();return}
+  if(cur&&cur.uid===m.uid){                              /* mais uma mensagem do mesmo amigo */
+    if(cur.ex){cur.txt.textContent+='\n'+m.text;cur.txt.scrollTop=cur.txt.scrollHeight}
+    else{cur.txt.textContent=m.text;arm(3000)}
+    return;
+  }
+  if(cur){
+    const i=Q.findIndex(x=>x.uid===m.uid);
+    if(i>=0)Q[i].text+='\n'+m.text;else if(Q.length<5)Q.push({uid:m.uid,name:m.name,text:m.text});
+    return;
+  }
+  openMsg(m);
+}
+document.addEventListener('visibilitychange',()=>{
+  if(document.hidden)return;
+  const l=HQ.splice(0);l.forEach(pushMsg);
+});
+
+/* ---------- janela de chat com um amigo ---------- */
+const CW={uid:'',name:'',un:null,last:0};
+const cw=document.createElement('div');cw.id='fmcw';cw.hidden=true;
+cw.innerHTML='<div class="fmc" role="dialog" aria-modal="true"><header><i></i><b class="fcn"></b><button type="button" class="fcx">✕</button></header><div class="fml"></div><div class="fmf"><input type="text" maxlength="500" autocomplete="off" enterkeyhint="send"><button type="button" class="fms">'+SVG_SEND+'</button></div></div>';
+document.body.appendChild(cw);
+const cwName=cw.querySelector('.fcn'),cwList=cw.querySelector('.fml'),cwInp=cw.querySelector('input'),cwSnd=cw.querySelector('.fms'),cwX=cw.querySelector('.fcx');
+function cwLabels(){
+  cwInp.placeholder=T('Escreva uma mensagem…','Write a message…');
+  cwSnd.setAttribute('aria-label',T('Enviar','Send'));cwX.setAttribute('aria-label',T('Fechar','Close'));
+}
+function cwDraw(list){
+  const near=cwList.scrollHeight-cwList.scrollTop-cwList.clientHeight<80,first=!cwList.childElementCount;
+  cwList.replaceChildren();
+  if(!list||!list.length){
+    const p=document.createElement('div');p.className='fme';p.textContent=T('Diga oi! 👋','Say hi! 👋');cwList.appendChild(p);return;
+  }
+  list.forEach(m=>{
+    const b=document.createElement('div');b.className='fb '+(m.me?'me':'th');b.textContent=m.text;cwList.appendChild(b);
+    if(!m.me&&m.t>(S.m[CW.uid]||0)){S.m[CW.uid]=m.t;saveSeen()} /* o que foi lido aqui não vira aviso depois */
+  });
+  if(near||first)cwList.scrollTop=cwList.scrollHeight;
+}
+function closeChat(){
+  if(CW.un){try{CW.un()}catch(e){}CW.un=null}
+  CW.uid='';cw.hidden=true;cwList.replaceChildren();
+  try{cwInp.blur()}catch(e){}
+}
+function openChat(uid,name){
+  if(!uidNow()||!FB.chatWatch){say(T('Entre na sua conta para conversar.','Log in to chat.'));return}
+  closeChat();
+  CW.uid=uid;CW.name=name||'';cwName.textContent=CW.name;cwInp.value='';cwLabels();
+  if(cur&&cur.uid===uid)closeMsg();
+  Q=Q.filter(x=>x.uid!==uid);
+  cw.hidden=false;
+  const un=FB.chatWatch(uid,(list,err)=>{
+    if(CW.uid!==uid)return;
+    if(err){cwList.replaceChildren();const p=document.createElement('div');p.className='fme';p.textContent=errMsg(err);cwList.appendChild(p);return}
+    cwDraw(list);
+  });
+  CW.un=un;
+  setTimeout(()=>{try{cwInp.focus({preventScroll:true})}catch(e){}},60);
+}
+let cwBusy=false;
+async function cwSend(){
+  const t=cwInp.value.trim(),uid=CW.uid;if(!t||!uid||cwBusy)return;
+  cwBusy=true;cwSnd.disabled=true;
+  try{await FB.chatSend(uid,t);cwInp.value=''}
+  catch(err){say(errMsg(err))}
+  finally{cwBusy=false;cwSnd.disabled=false;try{cwInp.focus({preventScroll:true})}catch(e){}}
+}
+cwSnd.addEventListener('click',cwSend);
+cwInp.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();cwSend()}else if(e.key==='Escape')closeChat()});
+cwX.addEventListener('click',closeChat);
+cw.addEventListener('pointerdown',e=>{if(e.target===cw)closeChat()}); /* toque fora do cartão fecha */
+window.onLang&&window.onLang.push(()=>{cwLabels();if(cur){cur.inp.placeholder=T('Responder…','Reply…')}});
+
+/* ---------- mensagens recebidas (um único listener na caixa de entrada do jogador) ---------- */
+let UID='',UN=null,S={since:0,m:{}};
+const KEY=()=>'fm-chat-seen:'+UID;
+function loadSeen(){
+  try{const o=JSON.parse(lsGet(KEY())||'null');if(o&&typeof o==='object'&&o.m&&typeof o.since==='number')return o}catch(e){}
+  return{since:Date.now(),m:{}};
+}
+function saveSeen(){lsSet(KEY(),JSON.stringify(S))}
+function onInbox(m){
+  const lim=Math.max(S.since,S.m[m.uid]||0);
+  if(m.t<=lim)return;
+  S.m[m.uid]=m.t;saveSeen();
+  if(m.t<Date.now()-864e5)return;                        /* mensagem com mais de 1 dia: sem aviso */
+  pushMsg(m);
+}
+
+/* ---------- amigo ficou online (chamado a cada leitura da lista de presença) ---------- */
+let PV=null,ANN=new Set(),FR=new Set(),frAt=0;
+window.__fmOnline=async function(players){
+  const me=UID;if(!me)return;
+  try{
+    if(Date.now()-frAt>60000){FR=await FB.friendIds();frAt=Date.now()}
+    if(UID!==me)return;
+    const now=new Set(players.filter(p=>p.uid&&p.uid!==me&&FR.has(p.uid)).map(p=>p.uid));
+    if(PV){ /* a 1ª leitura só marca quem já estava online; não avisa */
+      players.forEach(p=>{
+        if(p.uid&&now.has(p.uid)&&!PV.has(p.uid)&&!ANN.has(p.uid)){ANN.add(p.uid);showOnline(p.name)} /* 1 aviso por amigo, mesmo que entre e saia */
+      });
+    }
+    PV=now;
+  }catch(e){}
+};
+
+/* ---------- login / logout ---------- */
+function stopAll(){
+  if(UN){try{UN()}catch(e){}UN=null}
+  closeChat();
+  if(cur){const c=cur;cur=null;clearT();c.el.remove()}
+  Q=[];HQ=[];PV=null;ANN=new Set();FR=new Set();frAt=0;
+}
+setInterval(()=>{
+  const u=uidNow();if(u===UID)return;
+  stopAll();UID=u;
+  if(!u)return;
+  S=loadSeen();saveSeen();
+  if(FB.inboxWatch)UN=FB.inboxWatch(onInbox);
+},1500);
+
+window.FMChat={open:openChat,close:closeChat};
 })();
 </script>
 
