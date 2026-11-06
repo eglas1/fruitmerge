@@ -1704,12 +1704,12 @@ const FB=(function(){
       async reportUser(p,reason,note,withChat){
         const u=auth.currentUser;if(!u)throw{code:'fm/login'};
         if(!p||!p.uid||p.uid===u.uid)throw{code:'fm/self'};
-        let ev=[];
+        let ev='';
         if(withChat){
           try{
             const pair=[u.uid,p.uid].sort().join('_');
             const sn=await db.collection('chats').doc(pair).collection('m').orderBy('t','desc').limit(10).get();
-            ev=sn.docs.slice().reverse().map(d=>{const x=d.data();return(x.from===u.uid?'denunciante: ':'denunciado: ')+String(x.text||'').slice(0,500)});
+            ev=sn.docs.slice().reverse().map(d=>{const x=d.data();return(x.from===u.uid?'denunciante: ':'denunciado: ')+String(x.text||'').slice(0,500)}).join('\n').slice(0,6000);
           }catch(e){}
         }
         try{
