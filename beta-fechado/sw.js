@@ -1,7 +1,7 @@
 /* Service worker do Fruit Merge.
    O index.html é sempre buscado na rede primeiro, então não precisa mexer
    em nada para atualizar o jogo. Só troque VERSION se mudar ícones ou este arquivo. */
-const VERSION = 'v6';
+const VERSION = 'v7';
 const CACHE = 'fruit-merge-' + VERSION;
 const PRECACHE = [
   './',
@@ -68,8 +68,11 @@ self.addEventListener('fetch', e => {
 
   // Página do jogo: tenta a rede primeiro (versão nova na hora).
   // Sem internet ou conexão lenta (> 4 s): usa a cópia guardada.
+  // Só a raiz e o index.html são "o jogo". Outras páginas (privacidade.html,
+  // excluir-conta.html) vão direto para a rede, senão abririam o jogo no lugar.
   if (req.mode === 'navigate') {
-    e.respondWith(freshPage());
+    const p = url.pathname;
+    if (p.endsWith('/') || p.endsWith('/index.html')) e.respondWith(freshPage());
     return;
   }
   e.respondWith(swr(req));
