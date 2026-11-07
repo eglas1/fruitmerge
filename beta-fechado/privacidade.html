@@ -25,11 +25,12 @@
 <tr><td><b>Conta:</b> nome de login, senha (guardada de forma protegida pelo serviço de autenticação do Google/Firebase, nunca vista por nós) e, se você usar, o e-mail da sua conta Google</td><td>Entrar no jogo, confirmar que a conta é sua e recuperar o acesso</td></tr>
 <tr><td><b>Perfil:</b> nome no jogo, número de tag (nome#número), apelido, ícone masculino/feminino, foto de perfil (miniatura, opcional), insígnias e data de criação da conta</td><td>Identificar você para outros jogadores e mostrar seu perfil aos amigos</td></tr>
 <tr><td><b>Progresso e estatísticas:</b> pontuações, recordes, experiência (XP), partidas, melancias feitas, tempo no jogo, duelos vencidos, temas e imagens salvas por você</td><td>Salvar seu progresso, montar o ranking e mostrar suas conquistas</td></tr>
+<tr><td><b>Moedas e compras:</b> saldo de moedas, poderes e pets que você tem, horário do último baú diário e, quando você compra moedas, o código do produto, o código do pedido e o código de confirmação da compra no Google Play</td><td>Guardar seu saldo com segurança no servidor, confirmar que a compra foi paga e evitar que ela seja creditada duas vezes. Não recebemos nem guardamos dados do seu cartão: o pagamento é feito pelo Google Play</td></tr>
 <tr><td><b>Social:</b> lista de amigos, pedidos de amizade, jogadores bloqueados e guarda compartilhada do pet</td><td>Recursos entre amigos</td></tr>
-<tr><td><b>Mensagens:</b> texto das mensagens do chat entre amigos (até 500 caracteres cada)</td><td>Entregar a conversa. São apagadas automaticamente cerca de 14 dias depois de enviadas</td></tr>
+<tr><td><b>Mensagens:</b> texto das mensagens do chat entre amigos (até 500 caracteres cada)</td><td>Entregar a conversa. O jogo apaga as mensagens depois que você e seu amigo tiveram chance de vê-las</td></tr>
 <tr><td><b>Denúncias:</b> motivo, comentário opcional e, se você marcar, as últimas mensagens da conversa</td><td>Moderação e segurança dos jogadores</td></tr>
 <tr><td><b>Presença online:</b> um carimbo de horário a cada poucos segundos, com seu nome e tag se estiver logado (visitantes sem conta aparecem só como um contador anônimo)</td><td>Mostrar quem está online</td></tr>
-<tr><td><b>Salas de duelo:</b> nome, placar e estado da partida</td><td>Duelos 1v1 e em duplas. As salas expiram em cerca de 24 horas</td></tr>
+<tr><td><b>Salas de duelo:</b> nome, placar e estado da partida</td><td>Duelos 1v1 e em duplas. As salas são apagadas quando o duelo termina</td></tr>
 <tr><td><b>No seu aparelho:</b> idioma, preferências e cópia do progresso (armazenamento local do navegador/app)</td><td>Fazer o jogo funcionar e abrir sem internet</td></tr>
 </table></div>
 <p>Não pedimos nem coletamos: localização, contatos, agenda, câmera, microfone, número de telefone, documentos ou dados de pagamento. A foto de perfil só é enviada se você escolher uma imagem.</p>
@@ -46,6 +47,7 @@
 <ul>
 <li><b>Outros jogadores:</b> veem seu nome, tag, apelido, foto, nível, estatísticas, recordes e insígnias. O ranking mundial mostra nome e pontuação. Mensagens do chat só são vistas por você e pelo amigo.</li>
 <li><b>Google / Firebase</b> (Authentication e Firestore): guarda os dados do jogo em servidores do Google, em nosso nome. <a href="https://policies.google.com/privacy" rel="noopener">Política de Privacidade do Google</a>.</li>
+<li><b>Google Play:</b> processa os pagamentos das compras de moedas e nos informa se a compra foi concluída. <a href="https://policies.google.com/privacy" rel="noopener">Política de Privacidade do Google</a>.</li>
 <li><b>Google Fonts:</b> a fonte do jogo é carregada dos servidores do Google, que recebem seu endereço IP nessa requisição.</li>
 <li><b>GitHub Pages:</b> a hospedagem das páginas do jogo é feita pelo GitHub, que pode registrar seu endereço IP ao entregar os arquivos.</li>
 <li><b>Google Play:</b> se você baixou o app pela Play Store, o Google trata dados da instalação conforme as próprias políticas.</li>
@@ -55,8 +57,10 @@
 <h2>5. Por quanto tempo guardamos</h2>
 <ul>
 <li>Dados da conta, perfil, progresso, ranking e amigos: enquanto a conta existir. Ao excluir a conta eles são apagados (veja a seção 7).</li>
-<li>Mensagens do chat: cerca de 14 dias depois de enviadas.</li>
-<li>Salas de duelo: cerca de 24 horas.</li>
+<li>Mensagens do chat: o jogo as apaga depois que você e seu amigo tiveram chance de vê-las. Se um dos dois não abrir o jogo, a mensagem pode ficar guardada por mais tempo, até a exclusão da conta ou o bloqueio da pessoa.</li>
+<li>Salas de duelo: apagadas pelo jogo quando o duelo termina. Salas abandonadas podem permanecer por mais tempo.</li>
+<li>Saldo de moedas, poderes e pets: enquanto a conta existir; são apagados com a conta.</li>
+<li>Registros de compras (código do pedido e valor em moedas, sem seu nome de jogador): podem ser mantidos após a exclusão da conta pelo prazo exigido por obrigações legais, fiscais e de prevenção a fraude.</li>
 <li>Denúncias: guardadas pelo tempo necessário para a moderação e para proteger outros jogadores. Podem permanecer depois que quem denunciou exclui a conta.</li>
 </ul>
 
@@ -75,5 +79,5 @@
 <p>ELIANGUSTAVO · <a href="mailto:eliangustavo.santos@gmail.com">eliangustavo.santos@gmail.com</a></p>
 
 <hr>
-<p class="mut"><b>English summary:</b> Fruit Merge is for players aged 13 or older. We store only what the game needs (account, profile, scores, friends, chat) using Google Firebase. Chat messages are deleted about 14 days after being sent. We do not sell data, show ads, or use advertising trackers. You can delete your account in the game under Settings › Delete account, or by emailing <a href="mailto:eliangustavo.santos@gmail.com">eliangustavo.santos@gmail.com</a>. See <a href="excluir-conta.html">how to delete your account</a>.</p>
+<p class="mut"><b>English summary:</b> Fruit Merge is for players aged 13 or older. We store only what the game needs (account, profile, scores, friends, chat) using Google Firebase. Chat messages are deleted by the game once you and your friend have had a chance to see them. We do not sell data, show ads, or use advertising trackers. You can delete your account in the game under Settings › Delete account, or by emailing <a href="mailto:eliangustavo.santos@gmail.com">eliangustavo.santos@gmail.com</a>. See <a href="excluir-conta.html">how to delete your account</a>.</p>
 </main></body></html>
