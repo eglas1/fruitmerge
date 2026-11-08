@@ -1439,6 +1439,11 @@ const FB=(function(){
               const k=o.findIndex(e=>e.u===x.id);
               if(k>=0){if(v>o[k].s){o[k].s=v;o[k].d=0}}else o.push({n:u.name||'',s:v,d:0,u:x.id,g:(u.gender==='m'||u.gender==='f')?u.gender:''})});
             o.sort((a,b)=>b.s-a.s);o.length=Math.min(o.length,3);
+            /* tempo: o perfil não guarda; tenta achar a partida do mesmo placar em "scores" */
+            await Promise.all(o.filter(e=>!e.d).map(async e=>{try{
+              const sq=await db.collection('scores').where('uid','==',e.u).get();
+              let best=null;sq.docs.forEach(z=>{const d=z.data();if(d.m===m&&d.s===e.s&&(+d.d||0)>0&&(!best||d.t<best.t))best=d});
+              if(best)e.d=best.d}catch(x){}}));
           }
         }
       }catch(x){console.warn('Pódio (perfis):',x)}
