@@ -1428,6 +1428,20 @@ const FB=(function(){
       catch(e){if(e&&e.code==='failed-precondition')q=await col.orderBy('s','desc').limit(300).get();else throw e}
       const seen={},o=[];
       q.docs.map(x=>x.data()).filter(d=>d.m===m).sort((a,b)=>b.s-a.s||a.t-b.t).forEach(d=>{if(o.length<3&&!seen[d.uid]){seen[d.uid]=1;o.push({n:d.n,s:d.s,d:d.d||0,u:d.uid,g:d.g||''})}});
+      /* recordes guardados no perfil (os mesmos que o perfil mostra): cobrem quem tem pontos na conta mas não tem a partida em "scores" */
+      try{
+        await authReady;
+        if(auth.currentUser){
+          const f={normal:'bc',surv:'bv',static:'bs',luck:'bl'}[m];
+          if(f){
+            const uq=await db.collection('users').orderBy(f,'desc').limit(5).get();
+            uq.docs.forEach(x=>{const u=x.data(),v=+u[f]||0;if(v<=0)return;
+              const k=o.findIndex(e=>e.u===x.id);
+              if(k>=0){if(v>o[k].s){o[k].s=v;o[k].d=0}}else o.push({n:u.name||'',s:v,d:0,u:x.id,g:(u.gender==='m'||u.gender==='f')?u.gender:''})});
+            o.sort((a,b)=>b.s-a.s);o.length=Math.min(o.length,3);
+          }
+        }
+      }catch(x){console.warn('Pódio (perfis):',x)}
       /* gênero escolhido no cadastro: vem do perfil do jogador (partidas antigas não têm) */
       await Promise.all(o.map(async e=>{try{const g=(await db.collection('users').doc(e.u).get()).data();if(g&&(g.gender==='m'||g.gender==='f'))e.g=g.gender}catch(x){}}));
       return o;
