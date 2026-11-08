@@ -237,6 +237,7 @@ button{background:var(--btn);color:#fff;border:0;border-radius:10px;padding:9px 
 #hpod .p1 .pl{font-size:38px}
 #hpod .sc{font-size:13px;line-height:1.1;white-space:nowrap}#hpod .sc small{font-size:9px;opacity:.85;margin-left:1px}
 #hpod .tm{font-size:10px;line-height:1.1;opacity:.85;white-space:nowrap}
+#hpod .nm.lk{cursor:pointer;pointer-events:auto;text-decoration:underline;text-underline-offset:2px;-webkit-tap-highlight-color:transparent}#hpod .nm.lk:active{opacity:.7}
 #hpod .c.vz .ch,#hpod .c.vz .bk,#hpod .c.vz .nm{opacity:.4}#hpod .c.vz .ch{filter:grayscale(1) brightness(.6)}
 #hero .har{top:34%}
 #nav #rk.dot::after{content:"";position:absolute;top:0;right:0;width:11.5px;height:11.5px;box-sizing:border-box;border-radius:50%;background:#c8f542;box-shadow:0 0 8px rgba(200,245,66,.9);border:1.5px solid #fff;z-index:3;pointer-events:none;animation:rkdot 1.6s ease-in-out infinite}
@@ -1420,11 +1421,14 @@ const FB=(function(){
     }
     /* Pódio online: 3 melhores jogadores distintos do modo (sem índice composto, filtra aqui) */
     async function top3(m){
+      await authReady;
       const col=db.collection('scores');let q;
       try{q=await col.where('m','==',m).orderBy('s','desc').limit(40).get()}
       catch(e){if(e&&e.code==='failed-precondition')q=await col.orderBy('s','desc').limit(300).get();else throw e}
       const seen={},o=[];
       q.docs.map(x=>x.data()).filter(d=>d.m===m).sort((a,b)=>b.s-a.s||a.t-b.t).forEach(d=>{if(o.length<3&&!seen[d.uid]){seen[d.uid]=1;o.push({n:d.n,s:d.s,d:d.d||0,u:d.uid,g:d.g||''})}});
+      /* gênero escolhido no cadastro: vem do perfil do jogador (partidas antigas não têm) */
+      await Promise.all(o.map(async e=>{try{const g=(await db.collection('users').doc(e.u).get()).data();if(g&&(g.gender==='m'||g.gender==='f'))e.g=g.gender}catch(x){}}));
       return o;
     }
     /* ===== Recorde mundial por modo: records/{normal|surv|static|luck} ===== */
@@ -1883,6 +1887,13 @@ const FB=(function(){
                  xp:p.xp||0,bc:p.bc||0,bs:p.bs||0,bl:p.bl||0,bv:p.bv||0,created:p.created||0,badges:p.badges||[],nick:p.nick||'',photo:p.photo||'',gender:p.gender||'',ptheme:p.ptheme||''};
         }));
         return out.filter(Boolean).sort((a,b)=>String(a.name).localeCompare(String(b.name)));
+      },
+      /* perfil público de qualquer jogador (usado ao tocar no nome no pódio) */
+      async userProfile(uid){
+        await authReady;if(!auth.currentUser)return null;
+        const sn=await db.collection('users').doc(uid).get();if(!sn.exists)return null;const p=sn.data()||{};
+        return{uid,name:p.name||'',tag:p.tag||'',melons:p.melons||0,games:p.games||0,siteMs:p.siteMs||0,dw:p.dw||0,pw:p.pw||0,
+               xp:p.xp||0,bc:p.bc||0,bs:p.bs||0,bl:p.bl||0,bv:p.bv||0,created:p.created||0,badges:p.badges||[],nick:p.nick||'',photo:p.photo||'',gender:p.gender||'',ptheme:p.ptheme||''};
       },
       onUser(cb,need){auth.onAuthStateChanged(async u=>{if(busy)return;if(!u){cb(null);return}try{cb(await loadProfile(u))}catch(e){if(e&&e.code==='fm/need-profile'){pend=u;if(need)need(suggestName(u))}cb(null)}})},
       /* console: concede uma insígnia (alpha|beta|cbeta) à conta pelo nome ou nome#tag */
@@ -2478,9 +2489,9 @@ function podHTML(m){
   const r=REC[m]||REC0[m]||null;let l=(TOP[m]&&TOP[m].l||[]).slice();
   if(r&&(!l.length||r.s>l[0].s)&&!l.some(x=>x.u&&x.u===r.u))l.unshift({n:r.n,s:r.s,d:r.d,u:r.u,g:r.g});
   l=l.slice(0,3);
-  return [0,1,2].map(i=>{const e=l[i],cls='c p'+(i+1)+(e?'':' vz'),im=(e&&e.g==='f')?HIMGF[HI]:HIMG[HI];
+  return [0,1,2].map(i=>{const e=l[i];if(e&&!e.g&&r&&r.u&&e.u===r.u)e.g=r.g||'';const cls='c p'+(i+1)+(e?'':' vz'),im=(e&&e.g==='f')?HIMGF[HI]:HIMG[HI];
     const nome=e?(/^jogador$/i.test(e.n)?TR('Jogador'):esc(e.n)):'—';
-    return '<div class="'+cls+'"><div class="cw"><img class="ch" alt="" src="'+im+'">'+(i===0&&e?'<span class="n1'+(e.g==='f'?' fem':'')+'">#1</span>':'')+'</div><div class="bk"><div class="pl">'+(i+1)+'</div><div class="nm">'+nome+'</div>'+(e?'<div class="sc">'+e.s+'<small>pts</small></div>'+(e.d?'<div class="tm">⏱ '+hfmt(e.d)+'</div>':''):'')+'</div></div>'}).join('')}
+    return '<div class="'+cls+'"><div class="cw"><img class="ch" alt="" src="'+im+'">'+(i===0&&e?'<span class="n1'+(e.g==='f'?' fem':'')+'">#1</span>':'')+'</div><div class="bk"><div class="pl">'+(i+1)+'</div><div class="nm'+(e&&e.u?' lk':'')+'"'+(e&&e.u?' data-u="'+esc(e.u)+'"':'')+'>'+nome+'</div>'+(e?'<div class="sc">'+e.s+'<small>pts</small></div>'+(e.d?'<div class="tm">⏱ '+hfmt(e.d)+'</div>':''):'')+'</div></div>'}).join('')}
 function loadTop(m){
   const c=TOP[m];if(c&&(c.p||NOW()-c.t<60000))return;TOP[m]=c||{l:[],t:0};TOP[m].p=1;
   if(!(FB.ok&&FB.top3)){TOP[m].p=0;return}
@@ -2496,11 +2507,16 @@ function drawHero(dir){
   $('rec1').querySelector('.rp').textContent=HE[HI]+' '+TR(HN[HI])+' · '+(r?r.s:0)+' pts';
   $('hpv').hidden=HI===0;$('hnx').hidden=HI===HM.length-1;
   $('hdt').innerHTML=HM.map((x,i)=>'<i'+(i===HI?' class="on"':'')+'></i>').join('');
-  if(dir){[$('hpod')].forEach(el=>{try{el.animate([{opacity:0,transform:'translateX('+(dir*60)+'px)'},{opacity:1,transform:'none'}],{duration:260,easing:'ease-out'})}catch(e){}});
+  if(dir){$('hpod').querySelectorAll('.ch,.bk').forEach(el=>{try{el.animate([{opacity:0},{opacity:1}],{duration:260,easing:'ease-out'})}catch(e){}}); /* só desvanece: o #1 fica parado no lugar */
     /* o "#1" já usa transform no pulsar (CSS); por isso desliza pela margem, que funciona em qualquer navegador e se soma ao pulsar */
-    const n1=$('hero').querySelector('.n1');if(n1)try{n1.animate([{opacity:0,marginLeft:(dir*60)+'px'},{opacity:1,marginLeft:'0px'}],{duration:260,easing:'ease-out'})}catch(e){}}
+    }
 }
 function heroGo(d){const n=HI+d;if(n<0||n>=HM.length)return;HI=n;drawHero(d)}
+$('hpod').addEventListener('click',async e=>{
+  const n=e.target.closest('.nm[data-u]');if(!n||!window.__openPlayer)return;
+  if(!USER){return}
+  try{const f=await FB.userProfile(n.dataset.u);if(f)window.__openPlayer(f)}catch(x){}
+});
 $('hnx').onclick=()=>heroGo(1);$('hpv').onclick=()=>heroGo(-1);
 (function(){let x0=null;const h=$('hero');
   h.addEventListener('touchstart',e=>{x0=e.touches[0].clientX},{passive:true});
@@ -3772,7 +3788,9 @@ function showProfile(f){
   q('ptl').innerHTML=BDT.map(b=>tstBadgeCard(b,testerHas(b,f))).join('');
   q('pv').scrollTop=0;
 }
-q('pb').onclick=()=>show(PVB);
+q('pb').onclick=()=>{if(PVB==='rv'){q('pv').hidden=true;document.getElementById('rv').hidden=false;return}show(PVB)};
+/* perfil aberto a partir do pódio do ranking: volta para o ranking */
+window.__openPlayer=f=>{PVB='rv';document.getElementById('rv').hidden=true;showProfile(f)};
 /* ===== mini perfil (resultado da busca) ===== */
 let MP=null;
 function mpSet(msg){q('mpm').textContent=msg||''}
