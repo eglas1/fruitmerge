@@ -3272,6 +3272,7 @@ function step(){
         b.w=w;b.a=(b.a||0)+w
       }
     }
+    for(let it=0;it<6;it++){
     for(let i=0;i<B.length;i++)for(let j=i+1;j<B.length;j++){
       const a=B[i],c=B[j],dx=c.x-a.x,dy=c.y-a.y,m=a.r+c.r,d2=dx*dx+dy*dy;
       if((a.sp>0)!==(c.sp>0))continue;let nx,ny,ov,ma,mc,t;
@@ -3283,6 +3284,12 @@ function step(){
         const tx=-ny,ty=nx,tv=(c.vx-a.vx)*tx+(c.vy-a.vy)*ty,f=tv*0.08;
         if(!a.sq&&!c.sq&&Math.abs(tv)>.3){const sl=(tv-(c.w||0)*c.r-(a.w||0)*a.r)*.05;a.w=(a.w||0)+sl/(Math.pow(a.r,.6)*2.2);c.w=(c.w||0)+sl/(Math.pow(c.r,.6)*2.2)}
         a.vx+=f*tx;a.vy+=f*ty;c.vx-=f*tx;c.vy-=f*ty}
+    }
+    /* sem "espremer": depois de cada passada as paredes/chão seguram as frutas, então o peso de cima não afunda as de baixo */
+    for(const b of B){
+      if(b.x<b.r)b.x=b.r;if(b.x>W-b.r)b.x=W-b.r;
+      if(b.y>H-b.r)b.y=H-b.r;if(b.y<b.r)b.y=b.r;
+    }
     }
   }
   // fusões
