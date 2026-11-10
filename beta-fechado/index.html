@@ -3230,7 +3230,14 @@ if(!rq||!(d.fullscreenEnabled||d.webkitFullscreenEnabled))return;b.hidden=false;
 const on=()=>!!(d.fullscreenElement||d.webkitFullscreenElement);
 b.onclick=()=>{try{const r=on()?ex.call(d):rq.call(el);if(r&&r.catch)r.catch(()=>{})}catch(e){}};
 ['fullscreenchange','webkitfullscreenchange'].forEach(n=>d.addEventListener(n,()=>{b.classList.toggle('on',on())}))})();
-$('rs').onclick=()=>{if(MODE==='duel'&&window.DUEL&&DUEL.surrender){DUEL.surrender();return}newMatch()};$('ag').onclick=newMatch;$('fl').onclick=()=>armPower('fl');$('cl').onclick=()=>{if(MODE==='duel'&&window.DUEL){DUEL.throwJunk();return}if(over||flipping)return;if(picking)picking=false;else if(clears>0)picking=true;hud()};
+/* reiniciar no meio da partida também conta: grava a pontuação no ranking e dá as moedas, como no fim normal */
+function countRestart(){
+  if(MODE==='duel'||over||DBG||!(score>0))return;
+  try{saveScore()}catch(e){console.warn('Reinício:',e)}
+  try{if(window.shopReward)shopReward(score,MODE)}catch(e){}
+  try{if(USER)setTimeout(()=>FB.push(),300)}catch(e){}
+}
+$('rs').onclick=()=>{if(MODE==='duel'&&window.DUEL&&DUEL.surrender){DUEL.surrender();return}countRestart();newMatch()};$('ag').onclick=newMatch;$('fl').onclick=()=>armPower('fl');$('cl').onclick=()=>{if(MODE==='duel'&&window.DUEL){DUEL.throwJunk();return}if(over||flipping)return;if(picking)picking=false;else if(clears>0)picking=true;hud()};
 
 function luckTick(){
   if(gt>=nF){nF+=35000;const l=Math.floor(Math.random()*F.length),r=F[l][1];
