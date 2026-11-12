@@ -3203,7 +3203,7 @@ function ptDraw(){const b=$('ptb'),p=$('ptp');if(!b||!p)return;ptSync();b.setAtt
 $('ptb').onclick=()=>{const p=$('ptp');p.hidden=!p.hidden;$('ptb').setAttribute('aria-expanded',String(!p.hidden))};
 $('ptp').onclick=e=>{const x=e.target.closest('.ptc');if(!x)return;const k=x.dataset.k;
   if(!ptOwn(k)){$('ptp').hidden=true;$('ptb').setAttribute('aria-expanded','false');cardMsg(TR('Tema bloqueado: você ainda não possui esse tema.'));return}
-  ptSet(k);if(STATS)STATS.ptheme=k;goldUI();ptDraw();$('ptp').hidden=true;try{FB.setProfile({ptheme:k}).catch(()=>cardMsg(TR('Não foi possível salvar o tema para os amigos agora.')))}catch(err){}$('ptb').setAttribute('aria-expanded','false')};
+  ptSet(k);if(STATS)STATS.ptheme=k;goldUI();ptDraw();$('ptp').hidden=true;try{FB.setProfile({ptheme:k}).catch(e=>{console.warn('ptheme',e);cardMsg(TR('Não foi possível salvar o tema para os amigos agora.')+' ['+((e&&e.code)||'erro')+']')})}catch(err){}$('ptb').setAttribute('aria-expanded','false')};
 window.onLang.push(()=>{try{ptDraw()}catch(e){}});
 ptDraw();
 window.onLang.push(()=>{try{drawAp()}catch(e){}});
@@ -6537,6 +6537,8 @@ html #pem .pemt.lk img{opacity:.6;filter:grayscale(1) brightness(1.5)}
 #sv.tm-mexico .stc,#sv.tm-mexico .pbg.on,#sv.tm-mexico #fbar .fbtn,#pv.tm-mexico .stc,#pv.tm-mexico .pbg.on,#pv.tm-mexico #fbar .fbtn,.apv.tm-mexico .stc,.apv.tm-mexico .pbg.on,.apv.tm-mexico #fbar .fbtn{border:3px solid var(--tc);background:linear-gradient(180deg,rgba(255,255,255,.14),rgba(255,255,255,0) 55%),rgba(8,8,32,.5);box-shadow:0 0 0 1px rgba(0,0,0,.7),0 0 12px var(--tg);color:#fff;}
 #sv.tm-mexico .pbg.off,#pv.tm-mexico .pbg.off,.apv.tm-mexico .pbg.off{border:2px solid var(--tc);background:rgba(8,8,32,.62);box-shadow:0 0 0 1px rgba(0,0,0,.6);opacity:.92;color:#fff}
 #sv.tm-mexico #plv,#sv.tm-mexico #pvl,#sv.tm-mexico #mpl,#sv.tm-mexico .lvp,#pv.tm-mexico #plv,#pv.tm-mexico #pvl,#pv.tm-mexico #mpl,#pv.tm-mexico .lvp,.apv.tm-mexico #plv,.apv.tm-mexico #pvl,.apv.tm-mexico #mpl,.apv.tm-mexico .lvp{background:linear-gradient(180deg,color-mix(in srgb,var(--tc) 100%,#fff 28%),var(--tc) 45%,color-mix(in srgb,var(--tc) 60%,#000));color:#fff;border:2px solid rgba(255,255,255,.85);box-shadow:0 0 0 1px rgba(0,0,0,.6),0 0 10px var(--tg);text-shadow:0 1px 0 rgba(0,0,0,.75),0 0 4px rgba(0,0,0,.6)}
+/* prévia de teste: avatar do mesmo tamanho do invólucro (acessório centralizado) */
+.tpw .pav{width:96px!important;height:96px!important;margin:0!important}
 </style>
 
 <style id="fmsf-css">
