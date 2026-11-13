@@ -3068,7 +3068,7 @@ function packPhoto(file){return new Promise((ok,no)=>{const u=URL.createObjectUR
     no(new Error('big'))}catch(e){no(e)}};
   im.onerror=()=>{URL.revokeObjectURL(u);no(new Error('img'))};im.src=u})}
 /* posição de cada acessório, em % do tamanho da foto: b = quanto sobe, w = largura, h = altura máxima (ajustados no provador) */
-const COS_POS={'oculos-preto':[60.3,103,72.1],'oculos-rosa':[60.3,103,72.1],'bone-policia':[60.3,103,72.1],'chapeu-cowboy':[75,103,88.3],'chapeu-cowboy-rosa':[75,103,88.3],'chapeu-pescador':[67.6,101,88.3],'chapeu-palha':[-3,160,122.1],'olhos-mola':[97,86,60.3]};
+const COS_POS={'oculos-preto':[60.3,103,72.1],'oculos-rosa':[60.3,103,72.1],'bone-policia':[60.3,103,72.1],'chapeu-cowboy':[75,103,88.3],'chapeu-cowboy-rosa':[75,103,88.3],'chapeu-pescador':[67.6,101,88.3],'chapeu-palha':[-3,160,122.1],'olhos-mola':[97,86,60.3],'capacete-viking':[50,200,75],'gorro-aviador':[23,120,98],'fez-marrocos':[59,103,71]};
 function cosStyle(id){const p=COS_POS[id]||[62,120,68];return 'left:'+(-(p[1]-100)/2)+'%;right:'+(-(p[1]-100)/2)+'%;bottom:'+p[0]+'%;height:'+p[2]+'%'}
 function cosTop(id){const p=COS_POS[id]||[62,120,68];return Math.max(0,(p[0]+p[2]-100)/100)} /* quanto passa acima da foto (fração do tamanho) */
 function cosImg(id){return /^[a-z0-9-]{1,24}$/.test(id||'')?'<img alt="" decoding="async" src="cosmeticos/'+id+'.webp">':''}
@@ -5564,7 +5564,7 @@ function equipPet(id){
    Imagens em arquivos separados (pasta cosmeticos/, WebP): nada disso entra no peso do index.html.
    Todos custam COS_PRECO moedas, compra única, e ficam no alto da foto do perfil. */
 const COS_PRECO=500;
-const COS_IDS=['bone-policia','chapeu-cowboy','chapeu-cowboy-rosa','chapeu-palha','chapeu-pescador','olhos-mola','oculos-preto','oculos-rosa'];
+const COS_IDS=['bone-policia','chapeu-cowboy','chapeu-cowboy-rosa','chapeu-palha','chapeu-pescador','olhos-mola','oculos-preto','oculos-rosa','capacete-viking','gorro-aviador','fez-marrocos'];
 const cosSrc=(id,mini)=>'cosmeticos/'+id+(mini?'-mini':'')+'.webp';
 const COS_TESTE=/[?&]testecos=1\b/.test(location.search); /* ?testecos=1 na URL: todos os acessórios liberados, só para testar */
 function cosOwned(){if(COS_TESTE)return COS_IDS.slice();let a=[];try{a=JSON.parse(localStorage.getItem('fm-cos')||'[]');if(!Array.isArray(a))a=[]}catch(e){a=[]}return a.filter(x=>COS_IDS.indexOf(x)>=0)}
@@ -5588,7 +5588,7 @@ function renderCos(){
      +(on?`<button type="button" class="buy alt cb ctr" data-act="un"><span class="q">✓ ${T('Equipado')}</span></button>`
         :has?`<button type="button" class="buy alt cb ctr" data-act="eq"><span class="q">${T('Equipar')}</span></button>`
         :`<button type="button" class="buy cb${coins<COS_PRECO?' no':''}" data-act="buy"><span class="q">${T('Comprar')}</span><span class="pr"><img alt="" src="${IMG.coin}">${fmt(COS_PRECO)}</span></button><button type="button" class="buy tst bl ctr"><span class="q">👁 ${T('Testar')}</span></button>`)
-     +'</div>'
+     +(PROV&&has?'<button type="button" class="buy tst bl ctr"><span class="q">👁 '+T('Testar')+'</span></button>':'')+'</div>'
   });
   $('shbody').innerHTML=h+'</div>'
 }
@@ -5639,6 +5639,25 @@ function buyTema(id){
     }})
 }
 function tpClose(){$('tpv').hidden=true}
+/* MODO PROVADOR (só para o dono do jogo): abra o jogo com ?provador=1, toque em Testar num acessório e ajuste com os controles; "Copiar" dá os números para colar em COS_POS. */
+const PROV=/[?&]provador=1\b/.test(location.search);
+function provControls(m,id){
+  const p=COS_POS[id]||(COS_POS[id]=[62,120,68]);
+  const wrap=m.querySelector('.tpw'),box=document.createElement('div');box.className='provb';
+  const defs=[['Subir / descer',0,-40,150,.5],['Largura',1,60,200,.5],['Altura máx.',2,20,160,.5]];
+  const out=document.createElement('code');
+  const upd=()=>{const o=m.querySelector('.cosl');if(o)o.style.cssText=cosStyle(id);wrap.style.setProperty('--ct',cosTop(id));wrap.classList.add('hascos');out.textContent="'"+id+"':["+p.map(v=>+(+v).toFixed(1)).join(',')+"]"};
+  defs.forEach(([nm,i,mn,mx,st])=>{
+    const r=document.createElement('div');r.className='provr';
+    r.innerHTML='<span>'+nm+'</span><button type="button">−</button><input type="range" min="'+mn+'" max="'+mx+'" step="'+st+'" value="'+p[i]+'"><button type="button">+</button>';
+    const inp=r.querySelector('input'),bs=r.querySelectorAll('button');
+    inp.oninput=()=>{p[i]=+inp.value;upd()};
+    bs[0].onclick=()=>{inp.value=+inp.value-st;inp.oninput()};bs[1].onclick=()=>{inp.value=+inp.value+st;inp.oninput()};
+    box.appendChild(r)});
+  const cp=document.createElement('button');cp.type='button';cp.className='provc';cp.textContent='Copiar números';
+  cp.onclick=()=>{const t=out.textContent;try{navigator.clipboard.writeText(t)}catch(e){}cp.textContent='Copiado! '+t;setTimeout(()=>cp.textContent='Copiar números',2500)};
+  box.appendChild(out);box.appendChild(cp);
+  const tps=m.querySelector('.tps');m.insertBefore(box,tps);upd()}
 function tpOpen(kind,id){
   const isT=kind==='tm';if(isT?TM_K.indexOf(id)<0:COS_IDS.indexOf(id)<0)return;
   let nick='',ph='',lv=1;try{nick=(STATS&&STATS.nick)||USER||'';ph=(STATS&&STATS.photo)||'';lv=(typeof lvl==='function'?lvl(+(STATS&&STATS.xp)||+XPT||0):1)||1}catch(e){}
@@ -5651,6 +5670,7 @@ function tpOpen(kind,id){
     +'<div class="tps"><div class="stc"><span>'+T('Melancias feitas')+'</span><b>1234</b></div><div class="stc"><span>'+T('Partidas jogadas')+'</span><b>88</b></div></div>'
     +'<div class="tpg"><div class="pbg on"><b>10 🍉</b></div><div class="pbg on"><b>20 🍉</b></div><div class="pbg off"><b>30 🍉</b></div></div>';
   m.querySelector('.apn').textContent=nick;
+  if(PROV&&!isT)provControls(m,id);
   $('tpt').textContent=T('Testando')+': '+(isT?T(PT_L[id]):T('Acessório'));
   $('tpn').textContent=T('Só uma prévia: o item ainda não é seu.');
   const has=isT?window.tmOwned().indexOf(id)>=0:cosOwned().indexOf(id)>=0,b=$('tpbuy');
@@ -6545,6 +6565,15 @@ html #pem .pemt.lk img{opacity:.6;filter:grayscale(1) brightness(1.5)}
 .ptc .sw.viking{background:url(temas/viking-mini.webp) center/cover}
 .ptc .sw.raposa{background:url(temas/raposa-mini.webp) center/cover}
 .ptc .sw.mexico{background:url(temas/mexico-mini.webp) center/cover}
+/* modo provador */
+.provb{width:100%;margin:8px 0 2px;display:flex;flex-direction:column;gap:6px;font-size:13px}
+.provr{display:flex;align-items:center;gap:6px}.provr span{width:92px;text-align:left;font-weight:700}
+.provr input{flex:1;min-width:0}.provr button{width:30px;height:30px;border-radius:8px;border:0;background:#2a9d4a;color:#fff;font-weight:900;font-size:18px;line-height:1}
+.provb code{display:block;padding:6px;border-radius:8px;background:rgba(0,0,0,.45);color:#fff;font-size:12px;word-break:break-all}
+.provc{height:34px;border-radius:10px;border:0;background:#ffb02e;color:#3a2200;font-weight:800}
+#tpm .provr button{background:#2a9d4a!important;color:#fff!important;border:0!important;opacity:1!important;box-shadow:none!important;text-shadow:none!important;padding:0!important;min-width:30px}
+#tpm .provb .provc{background:#ffb02e!important;color:#3a2200!important;opacity:1!important;text-shadow:none!important;box-shadow:none!important;border:0!important;padding:0 12px!important}
+#tpm .provb code{background:#3b2d20!important;color:#fff!important}
 </style>
 
 <style id="fmsf-css">
