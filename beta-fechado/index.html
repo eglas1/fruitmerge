@@ -6632,6 +6632,9 @@ html #pem .pemt.lk img{opacity:.6;filter:grayscale(1) brightness(1.5)}
 .vtg.open{padding:0 0 0 0}
 .vtg.open .vtl{max-width:122px;padding:0 10px 0 4px}
 #pnr:has(.vtg.open) #pne{display:none}
+/* etiqueta expandida: o nome (se for grande) encolhe com "…" para a etiqueta caber inteira */
+#pnr:has(.vtg.open),.vtrow:has(.vtg.open){grid-template-columns:0 minmax(0,1fr) auto;column-gap:0}
+#pnr:has(.vtg.open) #pnk,.vtrow:has(.vtg.open) .vtn{max-width:none;margin-right:6px}
 .vtg.vt-verde.open{background:linear-gradient(160deg,#eaff9a,#9ae61f 50%,#5aa800);border-color:#f2ffc2}.vtg.vt-verde .vtl{color:#1c3800}
 .vtg.vt-ouro.open{background:linear-gradient(160deg,#fff0a0,#ffcf2e 50%,#d9980b);border-color:#fff6c2}.vtg.vt-ouro .vtl{color:#4a2e00}
 .vtg.vt-prata.open{background:linear-gradient(160deg,#f5f8fc,#c3ccd8 50%,#8e99a6);border-color:#f1f5f9}.vtg.vt-prata .vtl{color:#1c242d}
