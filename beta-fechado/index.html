@@ -3106,7 +3106,7 @@ function packPhoto(file){return new Promise((ok,no)=>{const u=URL.createObjectUR
     no(new Error('big'))}catch(e){no(e)}};
   im.onerror=()=>{URL.revokeObjectURL(u);no(new Error('img'))};im.src=u})}
 /* posição de cada acessório, em % do tamanho da foto: b = quanto sobe, w = largura, h = altura máxima (ajustados no provador) */
-const COS_POS={'oculos-preto':[60.3,103,72.1],'oculos-rosa':[60.3,103,72.1],'bone-policia':[60.3,103,72.1],'chapeu-cowboy':[75,103,88.3],'chapeu-cowboy-rosa':[75,103,88.3],'chapeu-pescador':[67.6,101,88.3],'chapeu-palha':[-3,160,122.1],'olhos-mola':[97,86,60.3],'capacete-viking':[50,200,75],'gorro-aviador':[23,120,98],'fez-marrocos':[59,103,71],'gorro-ushanka':[28,124,92],'sombrero-mexicano':[72,138,80],'turbante-vermelho':[58,103,76]};
+const COS_POS={'oculos-preto':[60.3,103,72.1],'oculos-rosa':[60.3,103,72.1],'bone-policia':[60.3,103,72.1],'chapeu-cowboy':[69,124,88],'chapeu-cowboy-rosa':[69,124,88],'chapeu-pescador':[67.6,101,88.3],'chapeu-palha':[-3,160,122.1],'olhos-mola':[97,86,60.3],'capacete-viking':[50,200,75],'gorro-aviador':[23,120,98],'fez-marrocos':[59,103,71],'gorro-ushanka':[28,124,92],'sombrero-mexicano':[72,138,80],'turbante-vermelho':[58,103,76]};
 function cosStyle(id){const p=COS_POS[id]||[62,120,68];return 'left:'+(-(p[1]-100)/2)+'%;right:'+(-(p[1]-100)/2)+'%;bottom:'+p[0]+'%;height:'+p[2]+'%'}
 function cosTop(id){const p=COS_POS[id]||[62,120,68];return Math.max(0,(p[0]+p[2]-100)/100)} /* quanto passa acima da foto (fração do tamanho) */
 function cosImg(id){return /^[a-z0-9-]{1,24}$/.test(id||'')?'<img alt="" decoding="async" src="cosmeticos/'+id+'.webp">':''}
@@ -6646,6 +6646,15 @@ html #pem .pemt.lk img{opacity:.6;filter:grayscale(1) brightness(1.5)}
 #pem .pemvo{height:44px;margin:0 0 4px;padding:0 14px;font-size:17px;justify-content:flex-start;gap:10px;text-align:left}
 #pem .pemvo .vts{width:26px;height:26px;flex:none;filter:none}.pemvo .vte{width:26px;text-align:center;font-size:18px;flex:none;-webkit-text-stroke:0;text-shadow:none}
 #pem .pemvo[aria-pressed="true"]{outline:3px solid #ffd92e;outline-offset:3px}
+/* loja: botões de compra alinhados no fim do cartão (cartões da mesma linha têm descrições de tamanhos diferentes) */
+.shg>.shc{height:100%}
+.shg>.shc small+.pbs{margin-top:auto}
+/* poderes: mesma animação dos outros itens da loja (brilho passando no cartão + ícone flutuando) */
+.shg>.shc:not(.dly):has(>.pic)::after{content:"";position:absolute;inset:0;border-radius:20px;pointer-events:none;background:linear-gradient(115deg,transparent 38%,rgba(255,255,255,.34) 50%,transparent 62%);background-size:260% 100%;animation:shshine 3.4s linear infinite}
+.shg>.shc:not(.dly):has(>.pic):nth-child(even)::after{animation-delay:-1.6s}
+.shg>.shc:not(.dly)>.pic{animation:shbob 3s ease-in-out infinite}
+.shg>.shc:not(.dly):nth-child(even)>.pic{animation-delay:-1.2s}
+@media (prefers-reduced-motion:reduce){.shg>.shc:not(.dly)::after,.shg>.shc:not(.dly)>.pic{animation:none}}
 </style>
 
 <style id="fmsf-css">
